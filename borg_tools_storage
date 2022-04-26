@@ -6,7 +6,6 @@
 #  /_____/\__,_/_/ /_/_/_/|_|   /____(_)_/ |_(_)_____(_)
 #
 # Creado por Pablo Ramos
-# https://git.lunix.com.ar/avillalba/borg_config
 #
 # Dependencies:
 #  borgbackup (https://github.com/borgbackup/borg)

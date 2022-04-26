@@ -27,9 +27,9 @@ chmod 755 /usr/local/bin/borg
 echo "Instalando script de Lunix: borgcron"
 mkdir -p /etc/lunix/borg/
 if  [ "$CURL" ]; then
-    curl --insecure -sL https://git.lunix.com.ar/avillalba/borg_config/raw/branch/master/borgcron -o /etc/lunix/borg/borgcron-local
+    curl --insecure -sL https://raw.githubusercontent.com/avillalba96/borg_config/master/borgcron -o /etc/lunix/borg/borgcron-local
 else
-    wget --no-check-certificate -q https://git.lunix.com.ar/avillalba/borg_config/raw/branch/master/borgcron -O /etc/lunix/borg/borgcron-local
+    wget --no-check-certificate -q https://raw.githubusercontent.com/avillalba96/borg_config/master/borgcron -O /etc/lunix/borg/borgcron-local
 fi
 
 chmod 600 -R /etc/lunix/borg
@@ -40,16 +40,16 @@ chmod +x /etc/lunix/borg/borgcron-*
 
 echo "Instalando script de Lunix: borgcron logrotate"
 if  [ "$CURL" ]; then
-    curl --insecure -sL https://git.lunix.com.ar/avillalba/borg_config/raw/branch/master/borg_logrotate -o /etc/logrotate.d/borg
+    curl --insecure -sL https://raw.githubusercontent.com/avillalba96/borg_config/master/borg_logrotate -o /etc/logrotate.d/borg
 else
-    wget --no-check-certificate -q https://git.lunix.com.ar/avillalba/borg_config/raw/branch/master/borg_logrotate -O /etc/logrotate.d/borg
+    wget --no-check-certificate -q https://raw.githubusercontent.com/avillalba96/borg_config/master/borg_logrotate -O /etc/logrotate.d/borg
 fi
 
 #Descargar borg_tools
 if  [ "$CURL" ]; then
-    curl --insecure -sL https://git.lunix.com.ar/avillalba/borg_config/raw/branch/master/borg_tools -o /usr/local/sbin/borg_tools
+    curl --insecure -sL https://raw.githubusercontent.com/avillalba96/borg_config/master/borg_tools -o /usr/local/sbin/borg_tools
 else
-    wget --no-check-certificate -q https://git.lunix.com.ar/avillalba/borg_config/raw/branch/master/borg_tools -O /usr/local/sbin/borg_tools
+    wget --no-check-certificate -q https://raw.githubusercontent.com/avillalba96/borg_config/master/borg_tools -O /usr/local/sbin/borg_tools
 fi
 chmod +x /usr/local/sbin/borg_tools
 

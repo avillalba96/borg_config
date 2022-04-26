@@ -14,11 +14,11 @@ La manera más simple de instalarlo, ejecutar los scripts de instalación en el 
 
 - SERVIDOR
 
-```wget --no-check-certificate -O - https://git.lunix.com.ar/avillalba/borg_config/raw/branch/master/scripts/server-install.sh | sh```
+```wget --no-check-certificate -O - https://raw.githubusercontent.com/avillalba96/borg_config/master/scripts/server-install.sh | sh```
 
 - CLIENTE
 
-```wget --no-check-certificate -O - https://git.lunix.com.ar/avillalba/borg_config/raw/branch/master/scripts/client-install.sh | sh```
+```wget --no-check-certificate -O - https://raw.githubusercontent.com/avillalba96/borg_config/master/scripts/client-install.sh | sh```
 
 > :warning: **Para Debian 6 y distros viejas**: Utilizar borg 1.1.11 o 1.1.10, el script utiliza versiones más nuevas. Asegurarse compatibilidad con el servidor
 > :warning: Evitar en lo posible la version 1.1.10, puede generar errores

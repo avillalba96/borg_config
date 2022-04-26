@@ -27,30 +27,30 @@ chmod 755 /usr/local/bin/borg
 echo "Instalando script de Lunix: borg_config"
 mkdir -p /etc/lunix/borg/client/.ssh
 if  [ "$CURL" ]; then
-    curl --insecure -sL https://git.lunix.com.ar/avillalba/borg_config/raw/branch/master/borg_config -o /usr/local/sbin/borg_config
-    curl --insecure -sL https://git.lunix.com.ar/avillalba/borg_config/raw/branch/master/borgcron.conf.template -o /etc/lunix/borg/client/borgcron.conf.template
+    curl --insecure -sL https://raw.githubusercontent.com/avillalba96/borg_config/master/borg_config -o /usr/local/sbin/borg_config
+    curl --insecure -sL https://raw.githubusercontent.com/avillalba96/borg_config/master/borgcron.conf.template -o /etc/lunix/borg/client/borgcron.conf.template
 else
-    wget --no-check-certificate -q https://git.lunix.com.ar/avillalba/borg_config/raw/branch/master/borg_config -O /usr/local/sbin/borg_config
-    wget --no-check-certificate -q https://git.lunix.com.ar/avillalba/borg_config/raw/branch/master/borgcron.conf.template -O /etc/lunix/borg/client/borgcron.conf.template
+    wget --no-check-certificate -q https://raw.githubusercontent.com/avillalba96/borg_config/master/borg_config -O /usr/local/sbin/borg_config
+    wget --no-check-certificate -q https://raw.githubusercontent.com/avillalba96/borg_config/master/borgcron.conf.template -O /etc/lunix/borg/client/borgcron.conf.template
 fi
 chmod +x /usr/local/sbin/borg_config
 chmod 600 -R /etc/lunix/borg
 
 #Descargar borg_tools y borgcron-prune
 if  [ "$CURL" ]; then
-    curl --insecure -sL https://git.lunix.com.ar/avillalba/borg_config/raw/branch/master/borg_tools_storage -o /usr/local/sbin/borg_tools_storage
-    curl --insecure -sL https://git.lunix.com.ar/avillalba/borg_config/raw/branch/master/borgcron-prune-server -o /etc/lunix/borg/borgcron-prune
+    curl --insecure -sL https://raw.githubusercontent.com/avillalba96/borg_config/master/borg_tools_storage -o /usr/local/sbin/borg_tools_storage
+    curl --insecure -sL https://raw.githubusercontent.com/avillalba96/borg_config/master/borgcron-prune-server -o /etc/lunix/borg/borgcron-prune
 else
-    wget --no-check-certificate -q https://git.lunix.com.ar/avillalba/borg_config/raw/branch/master/borg_tools_storage -O /usr/local/sbin/borg_tools_storage
-    wget --no-check-certificate -q https://git.lunix.com.ar/avillalba/borg_config/raw/branch/master/borgcron-prune-server -O /etc/lunix/borg/borgcron-prune
+    wget --no-check-certificate -q https://raw.githubusercontent.com/avillalba96/borg_config/master/borg_tools_storage -O /usr/local/sbin/borg_tools_storage
+    wget --no-check-certificate -q https://raw.githubusercontent.com/avillalba96/borg_config/master/borgcron-prune-server -O /etc/lunix/borg/borgcron-prune
 fi
 chmod +x /usr/local/sbin/borg_tools_storage
 chmod +x /etc/lunix/borg/borgcron-prune
 echo "Instalando script de Lunix: borgcron logrotate"
 if  [ "$CURL" ]; then
-    curl --insecure -sL https://git.lunix.com.ar/avillalba/borg_config/raw/branch/master/borg_logrotate -o /etc/logrotate.d/borg
+    curl --insecure -sL https://raw.githubusercontent.com/avillalba96/borg_config/master/borg_logrotate -o /etc/logrotate.d/borg
 else
-    wget --no-check-certificate -q https://git.lunix.com.ar/avillalba/borg_config/raw/branch/master/borg_logrotate -O /etc/logrotate.d/borg
+    wget --no-check-certificate -q https://raw.githubusercontent.com/avillalba96/borg_config/master/borg_logrotate -O /etc/logrotate.d/borg
 fi
 
 #Generar carpeta para repositorio
