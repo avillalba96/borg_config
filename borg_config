@@ -1,0 +1,176 @@
+#!/usr/bin/env bash
+#      __                _         _____   ____    __
+#     / /   __  ______  (_)  __   / ___/  / __ \  / /
+#    / /   / / / / __ \/ / |/_/   \__ \  / /_/ / / /
+#   / /___/ /_/ / / / / />  <    ___/ / / _, _/ / /____
+#  /_____/\__,_/_/ /_/_/_/|_|   /____(_)_/ |_(_)_____(_)
+#
+# Creado por Pablo Ramos
+#
+# Dependencies:
+#  borgbackup (https://github.com/borgbackup/borg)
+
+VERSION="0.7"
+DIR=/tmp/
+ERROR=0
+
+#Colores de texto
+BOLD=$(tput bold)
+NORMAL=$(tput sgr0)
+RED=$(tput setaf 1)
+YELLOW=$(tput setaf 3)
+
+
+#Variables de borg
+ENCRYPTION="repokey-blake2"
+DIRBASE="/u/borgbackup/"
+DIRCONFIG="/etc/lunix/borg/client"
+BORGUSER="borg"
+
+#Preferentemente configurar la variable SERVER con una IP fija.
+#Si no obtener IP principal del servidor local.
+#Esta IP no se utiliza en este script, se utiliza en el script del cliente
+SERVER=$(hostname -I | awk '{print $1}')
+#Puerto para conexión SSH desde los clientes
+PORT="22"
+
+show_help() {
+    echo "uso: borg_config [--encryption ENCRIPTACION] [--dir DIRECTORIO] [--client CLIENTE]"
+    echo " "
+    echo "${BOLD}borg_config"
+    echo "Genera configuracion y repositorio para un nuevo cliente de borgbackup"
+    echo "Este script se debe correr en el servidor de repositorios borg"
+    echo ""
+    echo "${NORMAL}argumentos opcionales:"
+    echo "   -c | --client              FQDN del cliente (${BOLD}-c cliente.ejemplo.com)"
+    echo "   ${NORMAL}-e | --encryption          Encriptacion de repositorio (Default: repokey-blake2)"
+    echo "   -d | --dir                 Full path para el repositorio (Default: nombre del cliente dentro de $DIRBASE)"
+    echo "   -h | --help                Muestra este mensaje"
+    echo "   -v | --version             Muestra la version del script"
+}
+
+main() {
+
+    #Comprobar que este instalado borg
+    BORG=$(command -v borg)
+    [[ ${#BORG} -eq 0 ]] && echo "${RED}Es necesario instalar borgbackup" && exit;
+
+    #Si no se ingreso el nombre de cliente, ingresar uno
+    if [ -z ${CLIENT+x} ]; then
+        echo "Ingrese FQDN del cliente:";
+        read -r CLIENT;
+    fi
+    #Si no se ingreso un directorio. usar el por defecto
+    if [ -z ${DIRREPO+x} ]; then
+        DIRREPO=$DIRBASE$CLIENT;
+    fi
+
+    #Comprobamos que no exista el repositorio ni la llave
+	#Comprobar tambien si existen archivos .pass y .key ?
+    if [ -e $DIRCONFIG/.ssh/"$CLIENT" ]; then
+        echo "${RED}Ya existe la llave SSH $DIRCONFIG/.ssh/$CLIENT";
+        ERROR=1;
+    fi
+    if [ -e "$DIRREPO" ]; then
+        echo "${RED}Ya existe el repositorio $DIRREPO";
+        ERROR=1;
+    fi
+    if [ ! -e $DIRCONFIG/borgcron.conf.template ]; then
+        echo "${RED}No existe la configuración base para cliente en $DIRCONFIG/borgcron.conf.template";
+        ERROR=1;
+    fi
+
+    #Si alguno de los chequeos anterior dio error, salir del script
+    if [ $ERROR = 1 ]; then
+        echo "${NORMAL}";
+        echo "Se detuvo el script sin generar ninguna configuracion";
+        echo "Corregir argumentos y volver a ejecutar.";
+        exit;
+    fi
+
+    #Generar carpeta de configuracion si no existe
+    if [ ! -e $DIRCONFIG/ ]; then
+        mkdir $DIRCONFIG/ ;
+        mkdir $DIRCONFIG/.ssh/ ;
+        chmod -R 600 $DIRCONFIG/ ;
+    fi
+
+    #Generar nueva llave SSH para el cliente
+    echo "Generando llave ssh y configuracion de cliente..."
+    ssh-keygen -t rsa -b 4096 -C "$CLIENT" -f $DIRCONFIG/.ssh/"$CLIENT" -q -N ""
+    PUBKEY=$(cat $DIRCONFIG/.ssh/"$CLIENT".pub)
+
+    #Habilitar acceso al repositorio con la nueva llave
+    echo "#$CLIENT" >> /home/$BORGUSER/.ssh/authorized_keys
+    echo "command=\"borg serve --append-only --restrict-to-path $DIRREPO/\",no-pty,no-agent-forwarding,no-port-forwarding,no-X11-forwarding,no-user-rc $PUBKEY" >> /home/$BORGUSER/.ssh/authorized_keys
+
+    #Copia de authorized_keys
+    echo "#$CLIENT" >> $DIRCONFIG/.ssh/authorized_keys
+    echo "command=\"borg serve --append-only --restrict-to-path $DIRREPO/\",no-pty,no-agent-forwarding,no-port-forwarding,no-X11-forwarding,no-user-rc $PUBKEY" >> $DIRCONFIG/.ssh/authorized_keys
+
+
+    #Generamos una passphrase random y la guardamos
+    PASS=$(openssl rand -base64 24)
+    echo "Utilizar passphrase: ${YELLOW}$PASS"
+    echo "${NORMAL}Si se utiliza otro passphrase, es necesario despues modificar la configuración del cliente"
+    echo "$PASS" > $DIRCONFIG/"$CLIENT".pass
+
+    #Creamos el repositorio como el usuario que se va a utilizar para la conexion remota
+    su - $BORGUSER -c "borg init -e=$ENCRYPTION $DIRREPO"
+
+    #Guardamos la key
+    borg key export "$DIRREPO" $DIRCONFIG/"$CLIENT".key
+
+    #Generamos script basico para cliente
+    sed s/SRV_VAR/"$SERVER"/g $DIRCONFIG/borgcron.conf.template > $DIRCONFIG/"$CLIENT".conf
+    sed -i s\#DIR_VAR\#"$DIRREPO"\#g $DIRCONFIG/"$CLIENT".conf
+    sed -i s\#PORT_VAR\#$PORT\#g $DIRCONFIG/"$CLIENT".conf
+    sed -i s\#PASS_VAR\#"$PASS"\#g $DIRCONFIG/"$CLIENT".conf
+    sed -i s\#CLIENT_VAR\#"$CLIENT"\#g $DIRCONFIG/"$CLIENT".conf
+
+    #Instrucciones para cliente (en nuestro storage se edito LOCAL => LUNIX)
+    echo ""
+    echo ""
+    echo "${BOLD}Instalación en cliente:"
+    echo "1) Copiar la llave privada $DIRCONFIG/.ssh/$CLIENT en el cliente dentro de /root/.ssh/$CLIENT-LOCAL"
+    echo ""
+    echo "2) Asignar permisos a la llave:"
+    echo "chmod 600 /root/.ssh/$CLIENT-LOCAL"
+    echo ""
+    echo "3) Generar o modificar el archivo /root/.ssh/config en el cliente con el contenido:"
+    echo "${RED}"
+    echo "Host $SERVER"
+    echo "  User borg"
+    echo "  IdentityFile /root/.ssh/$CLIENT-LOCAL"
+    echo "${NORMAL} ${BOLD}"
+    echo ""
+    echo "4) Copiar la configuración $DIRCONFIG/$CLIENT.conf en el cliente como /etc/lunix/borg/borgcron-local.conf"
+    echo ""
+    echo "5) Modificar los directorios en la configuración de ser necesario"
+    echo "${NORMAL}"
+
+}
+
+#Asignamos argumentos a variables
+while [[ "$1" ]]; do
+    case "$1" in
+        -e | --encryption)
+            ENCRYPTION=$2
+            shift ;;
+        -d | --dir)
+            DIRREPO=$2
+            shift ;;
+        -c | --client)
+            CLIENT=$2
+            shift ;;
+        -v | --version)
+            echo $VERSION && exit ;;
+        -h | --help) show_help && exit ;;
+        * )
+            echo "Argumento invalido $1" && exit ;;
+    esac
+    shift
+done
+
+#Correr funcion main
+main

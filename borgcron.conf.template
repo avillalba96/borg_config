@@ -1,0 +1,66 @@
+# Declaración de variables para scripts de borg
+# Mover a /etc/lunix/borg/borgcron-local.conf
+
+#BORG_BIN: Full path de ejecutable de borg
+BORG_BIN="/usr/local/bin/borg"
+#RUN_PID_DIR: Directorio para guardar estado del proceso de backup
+RUN_PID_DIR="/var/run/borg-local"
+#LOG_FILE: Archivo para logs
+LOG_FILE="/var/log/borg/borgbackup-local.log"
+#LAST_BACKUP_DIR: Directorio donde se guarda fecha del ultimo backup
+LAST_BACKUP_DIR="/var/log/borg/last-local"
+
+##############################################################
+# Configuración del servidor de backups, deberia generarse
+# automaticamente
+##############################################################
+#SERVER: IP o FQDN del servidor de repositorios
+SERVER="SRV_VAR"
+#PORT: Puerto para la conexión SSH
+PORT="PORT_VAR"
+#USER: Usuario con el que conectarse al servidor de repositorios
+USER="borg"
+#REPO: Directorio del repositorio dentro del servidor
+REPO="DIR_VAR"
+#REPO_PASS: Password del repositorio
+REPO_PASS="PASS_VAR"
+
+##############################################################
+# Directorios
+##############################################################
+#BACKUP_DIRS: Directorios incluidos en el backup
+#Ejemplos para servidores
+#WEB:
+#BACKUP_DIRS="/etc /home/lunix /root /var/spool/cron /usr/local /var/www"
+#PROXMOX:
+#BACKUP_DIRS="/etc /home/lunix /root /etc/pve /var/lib/pve-cluster /root/.ssh /var/spool/cron /usr/local"
+#PROXMOX-BACKUP-SERVER:
+#BACKUP_DIRS="/etc /home/lunix /root /etc/proxmox-backup /var/lib/proxmox-backup /root/.ssh /var/spool/cron /usr/local"
+#UNIFI:
+#BACKUP_DIRS="/etc /home/lunix /root /var/spool/cron /usr/local /var/lib/unifi/backup"
+#Por defecto un backup basico
+BACKUP_DIRS="/etc /home/lunix /root /var/spool/cron /usr/local"
+#Agregar con prefijo --exclude los subdirectorios que deben ignorarse
+ADD_BACKUP_PARAMS="--exclude-caches --exclude /root/.cache --exclude '/home/*/.cache/*' --exclude '/var/cache/*' --exclude '/var/tmp/*' --exclude /u/var-lib-docker --exclude /var/lib/docker"
+
+##############################################################
+# Variables del backup
+##############################################################
+#BACKUP_NAME: NO CAMBIAR AL MENOS QUE SEA NECESARIO
+# Esto se incluye en el nombre de los archivos, al cambiarlo se
+# deben borrar los archivos viejos de forma manual
+BACKUP_NAME='FULL-LOCAL'
+#PRUNE_PARAMS: Periodo de retención de los backups
+PRUNE_PARAMS="--keep-daily=61 --keep-weekly=8 --keep-monthly=2 --keep-yearly=0"
+#CRITICAL_TIME: Tiempo maximo entre backups antes que envie alerta
+CRITICAL_TIME="172800" # 48hs (48*60*60)
+#ALERT_EMAIL: Dirección de email a la que enviar alertas
+ALERT_EMAIL="ingenieria@lunix.com.ar"
+
+##############################################################
+# Variables por defecto para borgcron, no es necesario cambiar
+##############################################################
+COMPRESSION="auto,zstd"
+SLEEP_TIME="20m"
+RETRY_NUM="5"
+DELAY="14400" #4 Horas
