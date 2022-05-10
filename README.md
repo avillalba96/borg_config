@@ -64,4 +64,4 @@ Similar a borg_tools, pero permite definir sobre que configuracion se quieren re
 ## Autores ✒️
 
 - **Pablo Ramos** - *Trabajo Inicial* - [Pablo Ramos](https://git.lunix.com.ar/pramos)
-- **Alejandro Villalba** - *Colaboracion* - [Alejandro Villalba](https://git.lunix.com.ar/avillalba)
+
