@@ -32,7 +32,12 @@ BORGUSER="borg"
 #Esta IP no se utiliza en este script, se utiliza en el script del cliente
 SERVER=$(hostname -I | awk '{print $1}')
 #Puerto para conexión SSH desde los clientes
-PORT="22"
+CHECKPORT=`grep Port /etc/ssh/sshd_config | grep -v "#" | wc -l`
+if [ $CHECKPORT -eq 0 ]; then
+    PORT="22"
+    else
+    PORT=`grep Port /etc/ssh/sshd_config | grep -v "#" | awk '{print $2}'`
+fi
 
 show_help() {
     echo "uso: borg_config [--encryption ENCRIPTACION] [--dir DIRECTORIO] [--client CLIENTE]"
