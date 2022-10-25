@@ -311,7 +311,7 @@ do
 			do_lock
 
 			# run prune
-			$BORG_BIN prune -v --stats --list "$PRUNE_PARAMS" 2>> $LOG_FILE
+			$BORG_BIN prune -v --stats --list $PRUNE_PARAMS 2>> $LOG_FILE
 
 			# check return code
 			exitcode_prune=$?
