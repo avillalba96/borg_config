@@ -36,6 +36,12 @@ fi
 chmod +x /usr/local/sbin/borg_config
 chmod 600 -R /etc/lunix/borg
 
+#Editamos el EMAIL en borgcron.conf.template
+echo "Colocar el EMAIL que se usara para enviar las alertas de fallas:"
+read EMAIL
+sed -i "s/ing@example.com/$EMAIL/g" /etc/lunix/borg/client/borgcron.conf.template
+echo ""
+
 #Descargar borg_tools y borgcron-prune
 if  [ "$CURL" ]; then
     curl --insecure -sL https://raw.githubusercontent.com/avillalba96/borg_config/master/borg_tools_storage -o /usr/local/sbin/borg_tools_storage
@@ -72,7 +78,7 @@ echo "Agregando cron"
 touch /var/spool/cron/crontabs/root
 echo "" >> /var/spool/cron/crontabs/root
 echo "#Borg Prune dos veces al mes" >> /var/spool/cron/crontabs/root
-echo "00 18 1,16 * * /etc/lunix/borg/borgcron-prune" >> /var/spool/cron/crontabs/root
+echo "00 18 1,16 * * /etc/lunix/borg/borgcron-prune > /dev/null 2>&1" >> /var/spool/cron/crontabs/root
 
 #Parametro zabbix
 if [ -f "/etc/zabbix/zabbix_agentd.conf" ]; then

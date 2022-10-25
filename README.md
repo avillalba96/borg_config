@@ -64,7 +64,6 @@ Similar a borg_tools, pero permite definir sobre que configuracion se quieren re
 
 - Revisar que script de prune devuelve error si falla cualquier prune
 - Checkeo de backups cada cierto tiempo? borg check y/o borg --dry-run extract
-- Que se edite la variable "ALERT_EMAIL" del archivo "borgcron.conf.template"
 
 ## Autores ✒️
 

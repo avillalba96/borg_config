@@ -55,7 +55,7 @@ PRUNE_PARAMS="--keep-daily=61 --keep-weekly=8 --keep-monthly=2 --keep-yearly=0"
 #CRITICAL_TIME: Tiempo maximo entre backups antes que envie alerta
 CRITICAL_TIME="172800" # 48hs (48*60*60)
 #ALERT_EMAIL: Dirección de email a la que enviar alertas
-ALERT_EMAIL="ingenieria@lunix.com.ar"
+ALERT_EMAIL="ing@example.com"
 
 ##############################################################
 # Variables por defecto para borgcron, no es necesario cambiar

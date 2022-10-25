@@ -12,7 +12,16 @@ VERSION="0.7"
 if [ ! -z "$1" ]; then
 	source "$1"
 else
-	source /etc/lunix/borg/borgcron-local.conf
+	CONFIG="/etc/lunix/borg/borgcron-local.conf"
+	CONFIGSTATUS="/etc/lunix/borg_status-local"
+	#Verificamos si existe el archivo
+	if [ -e $CONFIG ]; then
+		source $CONFIG
+	else
+		echo "${RED}No existe el archivo de configuración $CONFIG"
+		echo "0" > $CONFIGSTATUS
+		exit
+	fi
 fi
 
 #Sobreescribimos configuración si se indica otro archivo
