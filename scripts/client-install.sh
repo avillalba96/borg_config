@@ -71,8 +71,10 @@ if [ -f "/etc/zabbix/zabbix_agentd.conf" ]; then
     echo "UserParameter=borg.status.local, cat /etc/lunix/borg_status-local" >> /etc/zabbix/zabbix_agentd.conf
     echo "UserParameter=borg.status.lunix, cat /etc/lunix/borg_status-lunix" >> /etc/zabbix/zabbix_agentd.conf
     systemctl restart zabbix-agent.service
-    echo "0" > /etc/lunix/borg_status-lunix
-    echo "0" > /etc/lunix/borg_status-local
 fi
+
+#Seteamos valores iniciales
+echo "0" > /etc/lunix/borg_status-lunix
+echo "0" > /etc/lunix/borg_status-local
 
 echo "Instalacion finalizada"
