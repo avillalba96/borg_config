@@ -60,7 +60,7 @@ echo "Agregando cron"
 touch /var/spool/cron/crontabs/root
 echo "" >> /var/spool/cron/crontabs/root
 echo "#Borg Backup" >> /var/spool/cron/crontabs/root
-echo "0 0 * * * /etc/lunix/borg/borgcron-lunix > /dev/null 2>&1" >> /var/spool/cron/crontabs/root
+echo "#0 0 * * * /etc/lunix/borg/borgcron-lunix > /dev/null 2>&1" >> /var/spool/cron/crontabs/root
 echo "0 1 * * * /etc/lunix/borg/borgcron-local > /dev/null 2>&1" >> /var/spool/cron/crontabs/root
 echo "" >> /var/spool/cron/crontabs/root
 crontab /var/spool/cron/crontabs/root
@@ -74,7 +74,7 @@ if [ -f "/etc/zabbix/zabbix_agentd.conf" ]; then
 fi
 
 #Seteamos valores iniciales
-echo "0" > /etc/lunix/borg_status-lunix
+echo "1" > /etc/lunix/borg_status-lunix
 echo "0" > /etc/lunix/borg_status-local
 
 echo "Instalacion finalizada"
