@@ -36,25 +36,16 @@ wget --no-check-certificate -O - https://raw.githubusercontent.com/avillalba96/b
 - Copiar borgcron.conf en /etc/lunix/borg/client/borgcron.conf.template
 - Generar usuario "borg" y crear la carpeta /home/borg/.ssh
 
-## Uso
+## **Uso**
 
-```bash
-borg_config [--encryption ENCRIPTACION] [--dir DIRECTORIO] [--client CLIENTE]
-
-argumentos opcionales:
-   -c | --client              FQDN del cliente (-c cliente.ejemplo.com)
-   -e | --encryption          Encriptacion de repositorio (Default: repokey-blake2)
-   -d | --dir                 Full path para el repositorio (Default: nombre del cliente dentro de /u/borgbackup/)
-   -h | --help                Muestra este mensaje
-   -v | --version             Muestra la version del script
-```
+## borg_config
 
 Ejecutar borg_config en el servidor para generar la configuración de clientes, y luego seguir las instrucciones para copiar la configuracion en el cliente.
 Asegurarse que los clientes lleguen al servidor en el puerto SSH
 
 ## borg_tools
 
-Herramienta adicional para facilitar el uso de borg en el cliente. Ofrece varias operaciones mediante un menu o pasando variables
+Herramienta adicional para facilitar el uso de borg en el cliente. Ofrece varias operaciones mediante un menu
 
 ## borg_tools_storage
 
@@ -66,4 +57,5 @@ Similar a borg_tools, pero permite definir sobre que configuracion se quieren re
 
 ## Autores ✒️
 
-- **Pablo Ramos** - *Trabajo Inicial* - [Pablo Ramos](https://git.lunix.com.ar/pramos)
+- **Pablo Ramos** - *Creador* - [Pablo Ramos](https://git.lunix.com.ar/pramos)
+- **Alejandro Villalba** - *Otros* - [Alejandro Villalba](https://github.com/avillalba96)

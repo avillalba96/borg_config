@@ -6,244 +6,223 @@
 #  /_____/\__,_/_/ /_/_/_/|_|   /____(_)_/ |_(_)_____(_)
 #
 # Creado por Pablo Ramos
+# Modificado por Alejandro Villalba
 #
 # Dependencies:
-#  borgbackup (https://github.com/borgbackup/borg)
-    
-VERSION="0.7"
+# borgbackup (https://github.com/borgbackup/borg)
+
 DIR=/tmp/
-ERROR=0
+TMP="/tmp/borgoptions"
+rm $TMP >/dev/null 2>&1
 
 #Colores de texto
-BOLD=$(tput bold)
 NORMAL=$(tput sgr0)
 RED=$(tput setaf 1)
-YELLOW=$(tput setaf 3)
-
-#Numeros
-NUM_CHECK='^[0-9]+$'
 
 #Carpeta con archivos de configuracion
 CONF_FOLDER='/etc/lunix/borg/client'
 
-
-show_help() {
-    echo "uso: borg_tools"
-    echo " "
-    echo "${BOLD}borg_tools"
-    echo "Herramienta de utilidades para borg de Lunix S.R.L."
-    echo "Se ejecuta en un cliente con un archivo de configuración presente"
-    echo "o indicando el archivo de configuración de forma manual"
-    echo ""
-    echo "${NORMAL}operaciones:"
-    echo "  info ARCHIVE:      Sin argumento  muestra información sobre el repositorio total."
-    echo "                     Si se indica un archivo, muestra información sobre este"
-    echo "  list NUMBER:       Muestra una lista de los ultimos backups. Lista los ultimos 10 si no se indica un numero"
-    echo "argumentos opcionales:"
-    echo "   -c | --config              Utiliza el archivo de configuración"
-    echo "                              especificado en lugar del por defecto"
-    echo "   -h | --help                Muestra este mensaje"
-    echo "   -v | --version             Muestra la version del script"
-}
-
 borg_info() {
-    echo "___________________________________________________"
+    clear
     if [ -z "$INFO_ARG" ]; then
         $BORG_BIN info
     else
         $BORG_BIN info "$BORG_REPO"::"$INFO_ARG"
     fi
-    echo "___________________________________________________"
     echo ""
 }
 
-borg_list_new() {
-    echo "___________________________________________________"
-    if [ -z "$LIST_ARG" ]; then
-        $BORG_BIN list --last 10
-    else
-        if [[ $LIST_ARG =~ $NUM_CHECK ]]; then
-            $BORG_BIN list --last "$LIST_ARG"
-        else 
-            echo "El argumento de ${BOLD}list ${NORMAL}debe ser un numero"
-        fi
-    fi
-    echo "___________________________________________________"
-    echo ""
-}
+borg_list() {
+    GOT_CONF=0
 
-borg_list_old() {
-    echo "___________________________________________________"
-    if [ -z "$LIST_ARG" ]; then
-        $BORG_BIN list --first 10
-    else
-        if [[ $LIST_ARG =~ $NUM_CHECK ]]; then
-            $BORG_BIN list --first "$LIST_ARG"
-        else 
-            echo "El argumento de ${BOLD}list ${NORMAL}debe ser un numero"
+    for a in $($BORG_BIN list --short); do
+        echo "$a \"\"" >>$TMP
+        GOT_CONF=1
+    done
+    if [ "$GOT_CONF" -eq 1 ]; then
+        LISTRESTPOINT=$(dialog --stdout --menu "Selecciona un punto para utilizar: " 20 100 10 --file $TMP)
+        if [ $? -eq 0 ]; then
+            RESTPOINT="$LISTRESTPOINT"
+            borg_mount
         fi
+    else
+        dialog --msgbox "No existen puntos de restauración" 10 50
     fi
-    echo "___________________________________________________"
-    echo ""
+    rm $TMP >/dev/null 2>&1
 }
 
 borg_mount() {
-    echo "___________________________________________________"
-    echo "Montando recurso..."
-    if [ -z "$MOUNT_ARG" ]; then
-        MOUNT_ARG=$( $BORG_BIN list --last 1 --short )
-        if [ ! -d "/tmp/$MOUNT_ARG" ]; then mkdir /tmp/"$MOUNT_ARG"; fi
-        $BORG_BIN mount "$BORG_REPO"::"$MOUNT_ARG" /tmp/"$MOUNT_ARG"
-        echo "Montaje realizado en /tmp/$MOUNT_ARG"
-    else
+    if (whiptail --title "" --yesno "Estas seguro que quiere montar este punto de restaración? " 10 60); then
+        clear
         if [ -z "$MOUNT_DEST" ]; then
-            MOUNT_DEST="/tmp/$MOUNT_ARG"
+            MOUNT_DEST="$DIR$RESTPOINT"
             if [ ! -d "$MOUNT_DEST" ]; then mkdir "$MOUNT_DEST"; fi
-            $BORG_BIN mount "$BORG_REPO"::"$MOUNT_ARG" "$MOUNT_DEST"
+            $BORG_BIN mount "$BORG_REPO"::"$RESTPOINT" "$MOUNT_DEST"
             echo "Montaje realizado en $MOUNT_DEST"
+            pause
         else
             if [ ! -d "$MOUNT_DEST" ]; then mkdir "$MOUNT_DEST"; fi
-            $BORG_BIN mount "$BORG_REPO"::"$MOUNT_ARG" "$MOUNT_DEST"
+            $BORG_BIN mount "$BORG_REPO"::"$RESTPOINT" "$MOUNT_DEST"
             echo "Montaje realizado en $MOUNT_DEST"
+            pause
         fi
     fi
-    echo "___________________________________________________"
-    echo ""
 }
 
 borg_umount() {
-    if [ -z "$UMOUNT_DEST" ]; then
-        echo "${RED}Es necesario indicar la carpeta a desmontar"
-        exit 2;
+    GOT_CONF=0
+
+    FILE2=$(echo $FILE | awk -F'.conf' '{print $1}')
+
+    for a in $(ls -1 $DIR | grep "$FILE2" | grep "FULL-LOCAL"); do
+        echo "$a \"\"" >>$TMP
+        GOT_CONF=1
+    done
+    if [ "$GOT_CONF" -eq 1 ]; then
+        LISTRESTPOINT=$(dialog --stdout --menu "Selecciona punto para desmontar: " 20 100 10 --file $TMP)
+        if [ $? -eq 0 ]; then
+            RESTPOINT="$DIR$LISTRESTPOINT"
+            $BORG_BIN umount "$RESTPOINT"
+            CHECKUMOUNT=$(ls -1 $RESTPOINT | wc -l)
+            if [ "$CHECKUMOUNT" -eq 0 ]; then
+                rm -r $RESTPOINT
+            fi
+            clear
+            echo "Se desmonto el repositorio $RESTPOINT"
+            pause
+        fi
     else
-        $BORG_BIN umount "$UMOUNT_DEST"
+        dialog --msgbox "No existen puntos montados" 10 50
     fi
+    rm $TMP >/dev/null 2>&1
 }
 
 borg_check() {
+    clear
     if [ -z "$CHECK_ARG" ]; then
         $BORG_BIN check -v -p "$BORG_REPO"
         echo ""
-        exit ;
+        exit
     else
         $BORG_BIN check -v -p "$BORG_REPO"::"$CHECK_ARG"
         echo ""
-        exit ;
+        exit
     fi
+}
+
+borg_repair() {
+    clear
+    if [ -z "$CHECK_ARG" ]; then
+        $BORG_BIN check --repair "$BORG_REPO"
+        chown -R borg.borg "$BORG_REPO"
+        echo ""
+        exit
+    else
+        $BORG_BIN check --repair "$BORG_REPO"::"$CHECK_ARG"
+        chown -R borg.borg "$BORG_REPO"::"$CHECK_ARG"
+        echo ""
+        exit
+    fi
+}
+
+pause() {
+    echo ""
+    echo -e $'Presione cualquier tecla para continuar...\n'
+    read -rs -n1
 }
 
 show_menu() {
-while true; do
-    echo "1) Información del repositorio"
-    echo "2) Listar los 10 archivos mas recientes"
-    echo "3) Listar los 10 archivos mas antiguos"
-    echo "4) Montar un archivo"
-    echo "5) Desmontar un archivo"
-    echo "6) Chequear el repositorio"
-    echo "7) Salir"
-    read -p "Opción (1-7): " OPT
-    case $OPT in
+    while true; do
+
+        HEIGHT=15
+        WIDTH=50
+        CHOICE_HEIGHT=4
+        BACKTITLE=""
+        TITLE=""
+        MENU="Selecciona alguna de las opciones:"
+
+        OPTIONS=(1 "Información del repositorio"
+            2 "Listar todos los puntos de restauración"
+            3 "Desmontar un punto de restauración"
+            4 "Chequear el repositorio"
+            5 "Reparar el repositorio"
+            6 "Salir")
+
+        CHOICE=$(dialog --clear \
+            --backtitle "$BACKTITLE" \
+            --title "$TITLE" \
+            --menu "$MENU" \
+            $HEIGHT $WIDTH $CHOICE_HEIGHT \
+            "${OPTIONS[@]}" \
+            2>&1 >/dev/tty)
+
+        case $CHOICE in
         1)
-            borg_info ;;
+            borg_info
+            pause
+            ;;
         2)
-            borg_list_new ;;
+            borg_list
+            ;;
         3)
-            borg_list_old ;;
+            borg_umount
+            ;;
         4)
-            read -p "Ingrese nombre del archivo o deje vacio para montar el ultimo: " MOUNT_ARG;
-            read -p "Ingrese carpeta de destino o deje vacio para montar en /tmp/: " MOUNT_DEST;
-            borg_mount ;;
-        5) 
-            read -p "Ingrese carpeta a desmontar: " UMOUNT_DEST;
-            borg_umount ;;
-        6) 
-            borg_check ;;
-        7)
-            exit ;;
+            borg_check
+            ;;
+        5)
+            borg_repair
+            ;;
+        6)
+            clear
+            exit
+            ;;
         *)
-            echo "${RED}Opción no valida ${NORMAL}" ;;
-    esac
-done
+            clear
+            echo "${RED}Opción no valida ${NORMAL}"
+            ;;
+        esac
+    done
 }
 
 select_conf() {
-    DIR_ORIGINAL=$(pwd)
-    echo "Configuraciones disponibles:"
-    cd $CONF_FOLDER && ls -1 *.conf |grep -v borgcron.conf ;
-    cd "$DIR_ORIGINAL" || exit
-    echo ""
-    read -p "Seleccione archivo de configuracion: " CLIENT;
-    CONFIG="$CONF_FOLDER/$CLIENT"
+    #Consultamos que .conf queremos usar
+    GOT_CONF=0
+
+    for a in $(ls -1 $CONF_FOLDER | grep -E "conf$"); do
+        echo "$a \"\"" >>$TMP
+        GOT_CONF=1
+    done
+    if [ "$GOT_CONF" -eq 1 ]; then
+        FILE=$(dialog --stdout --menu "Selecciona la configuración: " 20 50 10 --file $TMP)
+        if [ $? -eq 0 ]; then
+            CONFIG="$CONF_FOLDER/$FILE"
+        fi
+    else
+        dialog --msgbox "No existen archivos de configuración $CONFIG" 10 50
+    fi
+    rm $TMP >/dev/null 2>&1
 }
 
 main() {
-    
-    #Leemos variables de borg.conf
+    #Leemos variables de /clients/borg.conf
     if [ -e "$CONFIG" ]; then
         source "$CONFIG"
     else
+        clear
         echo "${RED}No existe el archivo de configuración $CONFIG"
-        exit;
+        exit
     fi
 
     #Comprobar que este definido borg
-    [[ ${#BORG_BIN} -eq 0 ]] && echo "${RED}Es necesario definir el ejecutable de borg" && exit;
+    clear
+    [[ ${#BORG_BIN} -eq 0 ]] && echo "${RED}Es necesario definir el ejecutable de borg" && exit
 
     export BORG_REPO="$REPO"
     export BORG_PASSPHRASE="$REPO_PASS"
-
 }
 
-#Si no hay argumentos, mostrar menu
-if [ $# -eq 0 ]; then
-    #Seleccionamos configuracion
-    if [ -z "$CONFIG" ]; then
-        select_conf
-    fi
-    #Cargamos variables
-    main
-    show_menu ;
-    exit ;
-else
-    #Asignamos argumentos a variables
-    while [[ "$1" ]]; do
-        case "$1" in
-            -c | --config)
-                CONFIG=$2
-                main
-                shift ;;
-            info )
-                INFO_ARG=$2
-                borg_info
-                exit ;;
-            list )
-                LIST_ARG=$2
-                borg_list_new
-                exit ;;
-            list_new )
-                LIST_ARG=$2
-                borg_list_new
-                exit ;;
-            list_old )
-                LIST_ARG=$2
-                borg_list_old
-                exit ;;
-            mount )
-                MOUNT_ARG=$2
-                MOUNT_DEST=$3
-                borg_mount
-                exit ;;
-            umount )
-                UMOUNT_DEST=$2
-                burg_umount
-                exit ;;
-            -v | --version)
-                echo $VERSION && exit ;;
-            -h | --help)
-                show_help && exit ;;
-            -* )
-                echo "Argumento invalido $1" && exit ;;
-        esac
-        shift
-    done
-fi
+#Correr funcion main
+select_conf
+main
+show_menu

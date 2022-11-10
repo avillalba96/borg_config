@@ -6,8 +6,6 @@
 # but we need it
 setopt shwordsplit 2>/dev/null
 
-VERSION="0.7"
-
 #Leemos variables de borg.conf
 if [ ! -z "$1" ]; then
 	source "$1"

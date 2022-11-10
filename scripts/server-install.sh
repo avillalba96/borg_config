@@ -23,7 +23,7 @@ fi
 chown root:root /usr/local/bin/borg
 chmod 755 /usr/local/bin/borg
 
-#Descargar borg_config y borgcron.conf.template (en nuestro storage se edito borgcron.conf.template LOCAL => LUNIX)
+#Descargar borg_config y borgcron.conf.template
 echo "Instalando script de Lunix: borg_config"
 mkdir -p /etc/lunix/borg/client/.ssh
 if  [ "$CURL" ]; then

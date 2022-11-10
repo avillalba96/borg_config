@@ -6,8 +6,6 @@
 # but we need it
 setopt shwordsplit 2>/dev/null
 
-VERSION="0.7"
-
 #Variables
 # basic, required information
 export BORG_RSH='ssh -oBatchMode=yes -oStrictHostKeyChecking=no'
