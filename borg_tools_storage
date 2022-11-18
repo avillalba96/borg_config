@@ -136,7 +136,7 @@ show_menu() {
 
         HEIGHT=15
         WIDTH=50
-        CHOICE_HEIGHT=4
+        CHOICE_HEIGHT=10
         BACKTITLE=""
         TITLE=""
         MENU="Selecciona alguna de las opciones:"
