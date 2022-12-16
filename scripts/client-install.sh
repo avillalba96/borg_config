@@ -14,6 +14,7 @@ fi
 #Instalar borg
 #Es necesario al menos la version 1.1 (aqui instalamos descargando el binario)
 #En buster se puede instalar por apt, en stretch activando stretch-backports
+apt-get update; apt-get install dialog -y
 echo "Instalando borgbackup"
 if  [ "$CURL" ]; then
     curl --insecure -sL https://github.com/borgbackup/borg/releases/download/1.2.2/borg-linux64 -o /usr/local/bin/borg
