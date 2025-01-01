@@ -17,9 +17,9 @@ fi
 apt-get update; apt-get install dialog -y
 echo "Instalando borgbackup"
 if  [ "$CURL" ]; then
-    curl --insecure -sL https://github.com/borgbackup/borg/releases/download/1.2.2/borg-linux64 -o /usr/local/bin/borg
+    curl --insecure -sL https://github.com/borgbackup/borg/releases/download/1.2.8/borg-linux64 -o /usr/local/bin/borg
 else
-    wget --no-check-certificate -q https://github.com/borgbackup/borg/releases/download/1.2.2/borg-linux64 -O /usr/local/bin/borg
+    wget --no-check-certificate -q https://github.com/borgbackup/borg/releases/download/1.2.8/borg-linux64 -O /usr/local/bin/borg
 fi
 chown root:root /usr/local/bin/borg
 chmod 755 /usr/local/bin/borg
